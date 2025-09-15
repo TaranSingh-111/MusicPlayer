@@ -1,7 +1,9 @@
 package com.example.musicplayer;
 
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -19,7 +21,7 @@ import android.os.Looper;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
+import android.media.MediaMetadataRetriever;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -74,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         mediaPlayer.setOnPreparedListener(mp -> {
             seekBar.setMax(mp.getDuration());
+            currentTime.setText("0:00");
             endTime.setText(formatTime(mp.getDuration()));
         });
 
@@ -111,6 +114,29 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+//        MediaMetadataRetriever metaRetriver = new MediaMetadataRetriever();
+//        metaRetriver.setDataSource("android.resource://"+getPackageName()+"/"+R.raw.sound);
+//        try {
+//            byte[] art = metaRetriver.getEmbeddedPicture();
+//            Bitmap songImage = BitmapFactory.decodeByteArray(art, 0, art.length);
+//            albumArt.setImageBitmap(songImage);
+//        } catch (Exception e) {
+//            albumArt.setBackgroundColor(Color.GRAY);
+//        }
+
+        MediaMetadataRetriever metaRetriver = new MediaMetadataRetriever();
+        AssetFileDescriptor afd = getResources().openRawResourceFd(R.raw.sound);
+        metaRetriver.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+
+        byte[] art = metaRetriver.getEmbeddedPicture();
+        if (art != null) {
+            Bitmap songImage = BitmapFactory.decodeByteArray(art, 0, art.length);
+            albumArt.setImageBitmap(songImage);
+        } else {
+            albumArt.setBackgroundColor(Color.GRAY);
+        }
+
     }
     private String formatTime(int milliseconds) {
             long minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds);
